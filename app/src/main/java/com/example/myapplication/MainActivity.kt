@@ -1,9 +1,11 @@
 package com.example.myapplication
 
 import android.Manifest
+import android.annotation.*
 import android.app.*
 import android.content.*
 import android.content.pm.*
+import android.media.*
 import android.net.*
 import android.os.*
 import android.provider.*
@@ -17,8 +19,11 @@ import com.example.myapplication.databinding.*
 import kotlinx.coroutines.*
 
 
-class MainActivity : AppCompatActivity() {
+class MainActivity : AppCompatActivity(), ImageAdapter.OnDeleteClickListener {
 
+    // Declare and initialize the RecyclerView and adapter
+    private lateinit var recyclerView: RecyclerView
+    private lateinit var imageAdapter: ImageAdapter
     private lateinit var binding: ActivityMainBinding
 
     private val requestPermissionLauncher =
@@ -30,10 +35,21 @@ class MainActivity : AppCompatActivity() {
             }
         }
 
+    @SuppressLint("NotifyDataSetChanged")
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
+
+        // Retrieve the LiveData list of images from the Room database
+        val imageDao = AppRoomDatabase.getInstance(this).imageDao()
+        val imagesLiveData = imageDao.getAllImages()
+
+        // Initialize the RecyclerView and adapter
+        recyclerView = findViewById(R.id.recyclerView)
+        recyclerView.layoutManager = LinearLayoutManager(this)
+        imageAdapter = ImageAdapter(imagesLiveData, this)
+        recyclerView.adapter = imageAdapter
 
         binding.fabButton.setOnClickListener {
             if (ContextCompat.checkSelfPermission(
@@ -45,6 +61,13 @@ class MainActivity : AppCompatActivity() {
             } else {
                 requestPermissionLauncher.launch(Manifest.permission.READ_EXTERNAL_STORAGE)
             }
+        }
+    }
+
+    override fun onDeleteClick(image: ImageDataClass) {
+        val imageDao = AppRoomDatabase.getInstance(this).imageDao()
+        GlobalScope.launch(Dispatchers.IO) {
+            imageDao.deleteImage(image)
         }
     }
 

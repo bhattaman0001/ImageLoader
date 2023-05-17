@@ -1,5 +1,7 @@
 package com.example.myapplication
 
+import android.media.*
+import androidx.lifecycle.*
 import androidx.room.*
 
 @Dao
@@ -8,6 +10,9 @@ interface ImageDao {
     suspend fun insertImage(image: ImageDataClass)
 
     @Query("SELECT * FROM images")
-    suspend fun getAllImages(): List<ImageDataClass>
+    fun getAllImages(): LiveData<List<ImageDataClass>>
+
+    @Delete
+    suspend fun deleteImage(image: ImageDataClass)
 }
 
