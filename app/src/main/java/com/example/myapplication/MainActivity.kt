@@ -19,21 +19,20 @@ import com.example.myapplication.databinding.*
 import kotlinx.coroutines.*
 
 
-class MainActivity : AppCompatActivity(), ImageAdapter.OnDeleteClickListener {
+class MainActivity : AppCompatActivity(), ImageAdapter.OnDeleteClickListener, ImageAdapter.OnImageClickListener {
 
     // Declare and initialize the RecyclerView and adapter
     private lateinit var recyclerView: RecyclerView
     private lateinit var imageAdapter: ImageAdapter
     private lateinit var binding: ActivityMainBinding
 
-    private val requestPermissionLauncher =
-        registerForActivityResult(ActivityResultContracts.RequestPermission()) { isGranted: Boolean ->
-            if (isGranted) {
-                openGallery()
-            } else {
-                startInstalledAppDetailsActivity(this)
-            }
+    private val requestPermissionLauncher = registerForActivityResult(ActivityResultContracts.RequestPermission()) { isGranted: Boolean ->
+        if (isGranted) {
+            openGallery()
+        } else {
+            startInstalledAppDetailsActivity(this)
         }
+    }
 
     @SuppressLint("NotifyDataSetChanged")
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -48,13 +47,12 @@ class MainActivity : AppCompatActivity(), ImageAdapter.OnDeleteClickListener {
         // Initialize the RecyclerView and adapter
         recyclerView = findViewById(R.id.recyclerView)
         recyclerView.layoutManager = LinearLayoutManager(this)
-        imageAdapter = ImageAdapter(imagesLiveData, this)
+        imageAdapter = ImageAdapter(imagesLiveData, this, this)
         recyclerView.adapter = imageAdapter
 
         binding.fabButton.setOnClickListener {
             if (ContextCompat.checkSelfPermission(
-                    this,
-                    Manifest.permission.READ_EXTERNAL_STORAGE
+                    this, Manifest.permission.READ_EXTERNAL_STORAGE
                 ) == PackageManager.PERMISSION_GRANTED
             ) {
                 openGallery()
@@ -64,11 +62,19 @@ class MainActivity : AppCompatActivity(), ImageAdapter.OnDeleteClickListener {
         }
     }
 
+    @OptIn(DelicateCoroutinesApi::class)
     override fun onDeleteClick(image: ImageDataClass) {
         val imageDao = AppRoomDatabase.getInstance(this).imageDao()
         GlobalScope.launch(Dispatchers.IO) {
             imageDao.deleteImage(image)
         }
+    }
+
+    override fun onImageClick(image: ImageDataClass) {
+        // Show image details separately
+        val intent = Intent(this, ImageDetailsActivity::class.java)
+        intent.putExtra(ImageDetailsActivity.EXTRA_IMAGE, image)
+        startActivity(intent)
     }
 
     private fun openGallery() {

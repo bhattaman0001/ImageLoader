@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- comment_background.xml -->
+<shape xmlns:android="http://schemas.android.com/apk/res/android">
+    <solid android:color="#FF0000" /> <!-- Background color of the comment layout -->
+    <corners android:radius="8dp" /> <!-- Rounded corners for the comment layout -->
+</shape>

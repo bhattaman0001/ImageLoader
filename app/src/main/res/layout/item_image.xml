@@ -20,7 +20,7 @@
             android:text="@string/delete"
             android:textColor="@android:color/white" />
 
-        <ImageView
+        <com.example.myapplication.CustomTouchImageView
             android:id="@+id/imageView"
             android:layout_width="200dp"
             android:layout_height="200dp"
